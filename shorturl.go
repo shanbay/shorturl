@@ -1,4 +1,4 @@
-package main
+package shorturl
 
 import (
 	"fmt"
@@ -9,13 +9,13 @@ const (
 	//VERSION is SDK version
 	VERSION = "0.1"
 
-	default_alphabet   = "asdfghjklzxcvbnmqwertyui"
+	default_alphabet   = "asdfghjklURLEncoderConfigqwertyui"
 	default_block_size = uint(24)
 	min_length         = 5
 	one                = uint64(1)
 )
 
-type URLEncoder struct {
+type urlEncoder struct {
 	alphabet   string
 	block_size uint
 }
@@ -25,7 +25,7 @@ type URLEncoderConfig struct {
 	block_size uint
 }
 
-func NewURLEncoder(config *URLEncoderConfig) *URLEncoder {
+func NewURLEncoder(config *URLEncoderConfig) *urlEncoder {
 	alphabet := default_alphabet
 	block_size := default_block_size
 	if config.alphabet != "" {
@@ -34,7 +34,7 @@ func NewURLEncoder(config *URLEncoderConfig) *URLEncoder {
 	if config.block_size != 0 {
 		block_size = config.block_size
 	}
-	url_encoder := &URLEncoder{
+	url_encoder := &urlEncoder{
 		alphabet:   alphabet,
 		block_size: block_size,
 	}
@@ -48,7 +48,7 @@ func getBit(n uint64, pos uint) int {
 	return 0
 }
 
-func (encoder *URLEncoder) encode(n uint64) uint64 {
+func (encoder *urlEncoder) encode(n uint64) uint64 {
 	for i, j := uint(0), uint(encoder.block_size-1); i < j; i, j = i+1, j-1 {
 		if getBit(n, i) != getBit(n, j) {
 			n ^= ((one << i) | (one << j))
@@ -57,7 +57,7 @@ func (encoder *URLEncoder) encode(n uint64) uint64 {
 	return n
 }
 
-func (encoder *URLEncoder) enbase(x uint64) string {
+func (encoder *urlEncoder) enbase(x uint64) string {
 	n := uint64(len(encoder.alphabet))
 	result := []byte{}
 	for {
@@ -75,7 +75,7 @@ func (encoder *URLEncoder) enbase(x uint64) string {
 	return string(revResult)
 }
 
-func (encoder *URLEncoder) debase(x string) uint64 {
+func (encoder *urlEncoder) debase(x string) uint64 {
 	n := uint64(len(encoder.alphabet))
 	result := uint64(0)
 	bits := []byte(x)
@@ -85,11 +85,11 @@ func (encoder *URLEncoder) debase(x string) uint64 {
 	return result
 }
 
-func (encoder *URLEncoder) EncodeURL(n uint64) string {
+func (encoder *urlEncoder) EncodeURL(n uint64) string {
 	return encoder.enbase(encoder.encode(n))
 }
 
-func (encoder *URLEncoder) DecodeURL(n string) uint64 {
+func (encoder *urlEncoder) DecodeURL(n string) uint64 {
 	return encoder.encode(encoder.debase(n))
 }
 
