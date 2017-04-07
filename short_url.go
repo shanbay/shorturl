@@ -1,22 +1,22 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
+	"strings"
 )
 
 const (
 	//VERSION is SDK version
 	VERSION = "0.1"
 
-	DEFAULT_ALPHABET   = "asdfghjklzxcvbnmqwertyui"
-	DEFAULT_BLOCK_SIZE = uint(24)
-	MIN_LENGTH         = 5
-	ONE                = uint64(1)
+	default_alphabet   = "asdfghjklzxcvbnmqwertyui"
+	default_block_size = uint(24)
+	min_length         = 5
+	one                = uint64(1)
 )
 
 type URLEncoder struct {
-	alphabet   []byte
+	alphabet   string
 	block_size uint
 }
 
@@ -26,10 +26,10 @@ type URLEncoderConfig struct {
 }
 
 func NewURLEncoder(config *URLEncoderConfig) *URLEncoder {
-	alphabet := []byte(DEFAULT_ALPHABET)
-	block_size := DEFAULT_BLOCK_SIZE
+	alphabet := default_alphabet
+	block_size := default_block_size
 	if config.alphabet != "" {
-		alphabet = []byte(config.alphabet)
+		alphabet = config.alphabet
 	}
 	if config.block_size != 0 {
 		block_size = config.block_size
@@ -42,24 +42,17 @@ func NewURLEncoder(config *URLEncoderConfig) *URLEncoder {
 }
 
 func getBit(n uint64, pos uint) int {
-	if (n & (ONE << pos)) != 0 {
+	if (n & (one << pos)) != 0 {
 		return 1
 	}
 	return 0
 }
 
 func (encoder *URLEncoder) encode(n uint64) uint64 {
-	var i uint = 0
-	var j uint = encoder.block_size - 1
-	for {
-		if i >= j {
-			break
-		}
+	for i, j := uint(0), uint(encoder.block_size-1); i < j; i, j = i+1, j-1 {
 		if getBit(n, i) != getBit(n, j) {
-			n ^= ((ONE << i) | (ONE << j))
+			n ^= ((one << i) | (one << j))
 		}
-		i++
-		j--
 	}
 	return n
 }
@@ -71,7 +64,7 @@ func (encoder *URLEncoder) enbase(x uint64) string {
 		ch := encoder.alphabet[x%n]
 		result = append(result, ch)
 		x = x / n
-		if x == 0 && len(result) >= MIN_LENGTH {
+		if x == 0 && len(result) >= min_length {
 			break
 		}
 	}
@@ -87,7 +80,7 @@ func (encoder *URLEncoder) debase(x string) uint64 {
 	result := uint64(0)
 	bits := []byte(x)
 	for _, bitValue := range bits {
-		result = result*n + uint64(bytes.IndexByte(encoder.alphabet, bitValue))
+		result = result*n + uint64(strings.IndexByte(encoder.alphabet, bitValue))
 	}
 	return result
 }
