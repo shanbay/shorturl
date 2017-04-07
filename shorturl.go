@@ -92,21 +92,3 @@ func (encoder *urlEncoder) EncodeURL(n uint64) string {
 func (encoder *urlEncoder) DecodeURL(n string) uint64 {
 	return encoder.encode(encoder.debase(n))
 }
-
-func main() {
-	encoder := NewURLEncoder(&URLEncoderConfig{})
-	for {
-		var opt int
-		var x string
-		var n uint64
-		fmt.Println("input 0: encode, 1: decode")
-		fmt.Scanf("%d", &opt)
-		if opt == 0 {
-			fmt.Scanf("%d", &n)
-			fmt.Println(encoder.EncodeURL(n))
-		} else {
-			fmt.Scanf("%s", &x)
-			fmt.Println(encoder.DecodeURL(x))
-		}
-	}
-}
